@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <title>数据库字段 - </title>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#关于">关于</a>&nbsp;»&nbsp;数据库字段</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">数据库字段</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#users">users表</a></li>
+<li><a href="#logininfo">logininfo表</a></li>
+<li><a href="#vcode">vcode表</a></li>
+<li><a href="#calendar">Calendar表</a></li>
+<li><a href="#friend">Friend表</a></li>
+</ul>
+</div>
+<h1 id="users">users表</h1>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+<th>type</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>username</td>
+<td>手机号</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>emails</td>
+<td>邮箱</td>
+<td>Array</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>emails[0].address</td>
+<td>邮件地址</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>emails[0].verified</td>
+<td>邮件验证</td>
+<td>Boolean</td>
+<td>false</td>
+</tr>
+<tr>
+<td>profile</td>
+<td>用户资料</td>
+<td>Object</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>profile.name</td>
+<td>用户名字</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>profile.regtime</td>
+<td>注册时间</td>
+<td>Number</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>profile.encryption</td>
+<td>md5加密的密码</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>profile.icon</td>
+<td>头像</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+</tbody>
+</table>
+<h1 id="logininfo">logininfo表</h1>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+<th>type</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>member_id</td>
+<td>用户ID</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>logindata</td>
+<td>YYYY-MM-DD格式的日期</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>logintime</td>
+<td>YYYY-MM-DD HH:MM:SS的日期</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>loginTimeInt</td>
+<td>带毫秒时间戳</td>
+<td>Number</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>type</td>
+<td>登陆的终端简写</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+</tbody>
+</table>
+<h1 id="vcode">vcode表</h1>
+<p>一个电话号码仅存在一条数据</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+<th>type</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>phone</td>
+<td>手机号</td>
+<td>String</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>code</td>
+<td>6验证码</td>
+<td>Number</td>
+<td>必填</td>
+</tr>
+<tr>
+<td>create_time</td>
+<td>验证码产生的时间</td>
+<td>Number</td>
+<td>必填</td>
+</tr>
+</tbody>
+</table>
+<h1 id="calendar">Calendar表</h1>
+<p>记录日程</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+<th>type</th>
+<th>default</th>
+<th>e.g.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>create_id</td>
+<td>创建人Id</td>
+<td>String</td>
+<td>必填</td>
+<td></td>
+</tr>
+<tr>
+<td>include</td>
+<td>包括哪些人</td>
+<td>Array</td>
+<td>必填</td>
+<td><code>[{_id:'', status: 1 or 0 or -1 or -2}], 1:完成，0:未完成，-1:删除，-2:占位</code></td>
+</tr>
+<tr>
+<td>create_time</td>
+<td>创建的时间</td>
+<td>Number</td>
+<td>必填</td>
+<td></td>
+</tr>
+<tr>
+<td>start_time</td>
+<td>日程开始时间</td>
+<td>Number</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>end_time</td>
+<td>日程结束时间</td>
+<td>Number</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>content</td>
+<td>日程内容</td>
+<td>String</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="friend">Friend表</h1>
+<p>记录用户的联系人关系和群组</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+<th>type</th>
+<th>default</th>
+<th>e.g.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user_id</td>
+<td>是谁的数据</td>
+<td>String</td>
+<td>--</td>
+<td>--</td>
+</tr>
+<tr>
+<td>friends</td>
+<td>存的联系人的信息</td>
+<td><code>[{_id:String,status: Number}]</code></td>
+<td>--</td>
+<td><code>-1(删除),0(未确认),1(好友),2(拒绝)</code></td>
+</tr>
+<tr>
+<td>groups</td>
+<td>群组信息</td>
+<td><code>[{_id: String, name: String, member_list: [String]}]</code></td>
+<td>--</td>
+<td>--</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2012-2014 .
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+            </span>
+        </div>
+        
+    </body>
+</html>
