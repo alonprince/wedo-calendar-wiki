@@ -1,0 +1,231 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <title>目录结构 - </title>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#关于">关于</a>&nbsp;»&nbsp;目录结构</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">目录结构</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#client">client(客户端代码)</a><ul>
+<li><a href="#css">css(全局样式)</a><ul>
+<li><a href="#fontawesomeicon-font">fontAwesome(icon-font的辅助样式)</a></li>
+<li><a href="#globals">globals(全局的样式)</a></li>
+<li><a href="#util">util(样式辅助工具)</a></li>
+<li><a href="#mainlessless">main.less(引用所需的less文件)</a></li>
+</ul>
+</li>
+<li><a href="#lib">lib(前台公用代码)</a><ul>
+<li><a href="#commoncoffee">common.coffee(前台公共函数)</a><ul>
+<li><a href="#_1">时间操作</a><ul>
+<li><a href="#switchdatetype-string-back-boolean">switchDate(type: String, back: Boolean)</a></li>
+<li><a href="#setcutimedata">setCuTime(data)</a></li>
+<li><a href="#gotoday">goToday()</a></li>
+<li><a href="#createmonth">createMonth()</a></li>
+<li><a href="#filterbyhourcollection-date">filterByHour(collection, date)</a></li>
+</ul>
+</li>
+<li><a href="#_2">页面效果</a><ul>
+<li><a href="#showmodaltemplatename-data-dom-">showModal(templateName, data, dom)   ---  重要!</a></li>
+</ul>
+</li>
+<li><a href="#_3">数据相关</a><ul>
+<li><a href="#allsharemember">allShareMember()</a></li>
+</ul>
+</li>
+<li><a href="#_4">订阅操作</a><ul>
+<li><a href="#subfriendinfo">subfriendInfo()</a></li>
+<li><a href="#refreshsubname">refreshSub(name)</a></li>
+<li><a href="#subnotificationnamearr">subNotificationName(arr)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#registerhelpercoffeehelper">registerHelper.coffee(全局的helper方法)</a><ul>
+<li><a href="#readavatar-id">{{readAvatar id}}</a></li>
+<li><a href="#getnotifyname-obj">{{getNotifyName obj}}</a></li>
+</ul>
+</li>
+<li><a href="#settingcoffee">setting.coffee(前台第三方的插件设置)</a></li>
+</ul>
+</li>
+<li><a href="#view">view(视图代码)</a><ul>
+<li><a href="#auth">auth(登陆注册)</a><ul>
+<li><a href="#auth-joincoffee">auth-join.coffee</a></li>
+</ul>
+</li>
+<li><a href="#calendar">calendar(日历主文件)</a></li>
+<li><a href="#group">group(好友群组)</a></li>
+<li><a href="#header">header(头部)</a></li>
+<li><a href="#modal">modal(模态框)</a></li>
+<li><a href="#share">share(分享)</a></li>
+<li><a href="#sidebar">sidebar(侧栏)</a></li>
+<li><a href="#tooltemplateloading404">toolTemplate(loading和404)</a></li>
+<li><a href="#app-bodyhtmllayout">app-body.html(layout模板)</a></li>
+<li><a href="#app-bodyjs">app-body.js(没啥用)</a></li>
+</ul>
+</li>
+<li><a href="#headhtml">head.html(头文件)</a></li>
+</ul>
+</li>
+<li><a href="#lib_1">lib(前后台公用代码)</a></li>
+<li><a href="#public">public(静态资源)</a></li>
+<li><a href="#server">server(后台代码)</a></li>
+</ul>
+</div>
+<p>介绍微度日历的目录结构</p>
+<h1 id="client">client(客户端代码)</h1>
+<h2 id="css">css(全局样式)</h2>
+<h3 id="fontawesomeicon-font">fontAwesome(icon-font的辅助样式)</h3>
+<h3 id="globals">globals(全局的样式)</h3>
+<div class="hlcode"><pre><span class="o">-</span> <span class="n">base</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>              <span class="err">清除默认样式</span>
+<span class="o">-</span> <span class="n">list</span><span class="o">-</span><span class="n">items</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>                    
+<span class="o">-</span> <span class="n">button</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>            <span class="err">按钮的样式</span>
+<span class="o">-</span> <span class="n">menu</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>
+<span class="o">-</span> <span class="n">form</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>        
+<span class="o">-</span> <span class="n">message</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>
+<span class="o">-</span> <span class="n">header</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>            <span class="n">header</span><span class="err">头的样式</span>
+<span class="o">-</span> <span class="n">nav</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>
+<span class="o">-</span> <span class="n">layout</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>      
+<span class="o">-</span> <span class="n">notification</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>      <span class="err">通知的样式</span>
+<span class="o">-</span> <span class="n">link</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>        
+<span class="o">-</span> <span class="n">sidebar</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span> 
+</pre></div>
+
+
+<h3 id="util">util(样式辅助工具)</h3>
+<div class="hlcode"><pre><span class="o">-</span> <span class="n">helpers</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>           <span class="err">一些全局的辅助样式，值得注意的为</span><span class="p">.</span><span class="n">position</span>
+<span class="o">-</span> <span class="n">reset</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>     
+<span class="o">-</span> <span class="n">typography</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>
+<span class="o">-</span> <span class="n">lesshat</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>                       <span class="err">自动加前缀的工具，遇到兼容性问题就进来查，比较重要的文件</span>
+<span class="o">-</span> <span class="n">text</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>    
+<span class="o">-</span> <span class="n">variables</span><span class="p">.</span><span class="n">import</span><span class="p">.</span><span class="n">less</span>         <span class="err">所有的变量，尽量不要在零散的</span><span class="n">css</span><span class="err">里面写颜色和数值，后期不好修改，请把所有公共的变量写入这个文件，十分重要！！！！</span>
+</pre></div>
+
+
+<h3 id="mainlessless">main.less(引用所需的less文件)</h3>
+<p>用法为<code>@import 'globals/base.import.less'</code></p>
+<h2 id="lib">lib(前台公用代码)</h2>
+<h3 id="commoncoffee">common.coffee(前台公共函数)</h3>
+<p>声明了<code>Common.client</code>命名空间,前台的公共函数全部存储到其中</p>
+<p><code>Common.client.static</code>为静态资源的命名空间</p>
+<h4 id="_1">时间操作</h4>
+<h5 id="switchdatetype-string-back-boolean">switchDate(type: String, back: Boolean)</h5>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">type</span><span class="err">值为</span><span class="p">[</span><span class="err">&#39;</span><span class="n">days</span><span class="err">&#39;</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">weeks</span><span class="err">&#39;</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">months</span><span class="err">&#39;</span><span class="p">],</span><span class="n">back</span><span class="err">为</span><span class="nb">true</span><span class="err">时</span><span class="p">,</span><span class="err">为后退</span>
+<span class="err">功能</span><span class="o">:</span><span class="err">切换日期的时间函数</span><span class="p">,</span><span class="err">例如在切换上一月下一月</span><span class="p">,</span><span class="err">前一天后一天</span>
+<span class="err">原理</span><span class="o">:</span><span class="err">通过</span><span class="n">moment</span><span class="p">.</span><span class="n">js</span><span class="err">做日期的增减操作</span><span class="p">,</span><span class="err">然后操作</span><span class="n">Session</span>
+</pre></div>
+
+
+<h5 id="setcutimedata">setCuTime(data)</h5>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">year</span><span class="p">,</span>
+    <span class="n">month</span><span class="p">,</span>
+    <span class="n">date</span>
+<span class="p">}</span>
+<span class="err">功能</span><span class="o">:</span><span class="err">设置当前时间</span>
+<span class="err">原理</span><span class="o">:</span><span class="err">通过控制</span><span class="n">Session</span><span class="err">切换当前时间</span>
+</pre></div>
+
+
+<h5 id="gotoday">goToday()</h5>
+<p><code>跳转到当前系统时间</code></p>
+<h5 id="createmonth">createMonth()</h5>
+<p><code>生成当月的数据,主要使用在月视图</code></p>
+<h5 id="filterbyhourcollection-date">filterByHour(collection, date)</h5>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">collection</span><span class="err">为数组</span><span class="p">,</span><span class="err">从数据库中查询后</span><span class="n">fetch</span><span class="err">的数据</span>
+     <span class="n">date</span> <span class="o">=</span> <span class="p">{</span>
+     <span class="nl">year:</span> <span class="n">Number</span>
+     <span class="nl">month:</span> <span class="n">Number</span>
+     <span class="nl">date:</span> <span class="n">Number</span>
+     <span class="nl">hour:</span> <span class="n">Number</span>
+<span class="p">}</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">根据起始时间筛选数据</span><span class="p">,</span><span class="err">主要使用在计算待办事项</span>
+</pre></div>
+
+
+<h4 id="_2">页面效果</h4>
+<h5 id="showmodaltemplatename-data-dom-">showModal(templateName, data, dom)   ---  重要!</h5>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">templateName</span><span class="err">弹出层的模板名</span><span class="p">,</span> <span class="n">data</span><span class="err">为渲染弹出层的数据</span><span class="p">,</span> <span class="n">dom</span><span class="err">为插入的地方</span><span class="p">,</span><span class="err">默认是</span><span class="n">body</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">删除前一个弹出层</span><span class="p">,</span><span class="err">并新渲染一个弹出层</span><span class="p">,</span><span class="err">避免同时存在的弹出层太多</span><span class="p">,</span><span class="err">不好管理的问题</span><span class="p">,</span><span class="err">请使用新弹出层的时候以这个方法来插入</span>
+</pre></div>
+
+
+<h4 id="_3">数据相关</h4>
+<h5 id="allsharemember">allShareMember()</h5>
+<p><code>在弹出层中计算出当前能分享的人和群组,用于新建日程和修改日程</code></p>
+<h4 id="_4">订阅操作</h4>
+<h5 id="subfriendinfo">subfriendInfo()</h5>
+<p><code>再次订阅friendInfo数据,原因是因为Meteor.users不是活性数据</code></p>
+<h5 id="refreshsubname">refreshSub(name)</h5>
+<p><code>刷新订阅数据</code></p>
+<h5 id="subnotificationnamearr">subNotificationName(arr)</h5>
+<p><code>根据消息id来订阅回消息的描述</code></p>
+<h3 id="registerhelpercoffeehelper">registerHelper.coffee(全局的helper方法)</h3>
+<h4 id="readavatar-id">{{readAvatar id}}</h4>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="err">用户</span><span class="n">id</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">返回用户的头像</span>
+<span class="err">原理</span><span class="o">:</span> <span class="err">查用户的</span><span class="n">icon</span><span class="err">字段</span><span class="p">,</span><span class="err">如果是二进制的就返回</span><span class="p">,</span><span class="err">如果不是就去线上读</span>
+</pre></div>
+
+
+<h4 id="getnotifyname-obj">{{getNotifyName obj}}</h4>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">obj</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nl">operate_id:</span> <span class="n">String</span>
+    <span class="nl">target_id:</span> <span class="n">String</span>
+    <span class="nl">event_type:</span> <span class="n">String</span>
+<span class="p">}</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">根据消息的信息组合出消息的内容</span>
+</pre></div>
+
+
+<h3 id="settingcoffee">setting.coffee(前台第三方的插件设置)</h3>
+<p>第三方弹出框的设置</p>
+<div class="hlcode"><pre><span class="nl">effect:</span>    <span class="err">动画类型</span>
+<span class="nl">position:</span>  <span class="err">出现的位置</span>
+<span class="nl">timeout:</span>   <span class="err">出现的时间</span>
+</pre></div>
+
+
+<h2 id="view">view(视图代码)</h2>
+<h3 id="auth">auth(登陆注册)</h3>
+<h4 id="auth-joincoffee">auth-join.coffee</h4>
+<p>登陆的js文件，后期需要调整的也就是<code>Template.join.events</code>里面的两个事件了</p>
+<p><strong>这里需要注意的是，如果登陆有错误信息，请写入<code>Session.set(ERRORS_KEY, value)</code></strong></p>
+<h3 id="calendar">calendar(日历主文件)</h3>
+<h3 id="group">group(好友群组)</h3>
+<h3 id="header">header(头部)</h3>
+<h3 id="modal">modal(模态框)</h3>
+<h3 id="share">share(分享)</h3>
+<h3 id="sidebar">sidebar(侧栏)</h3>
+<h3 id="tooltemplateloading404">toolTemplate(loading和404)</h3>
+<h3 id="app-bodyhtmllayout">app-body.html(layout模板)</h3>
+<h3 id="app-bodyjs">app-body.js(没啥用)</h3>
+<h2 id="headhtml">head.html(头文件)</h2>
+<h1 id="lib_1">lib(前后台公用代码)</h1>
+<h1 id="public">public(静态资源)</h1>
+<h1 id="server">server(后台代码)</h1>
+</div>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2012-2014 .
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+            </span>
+        </div>
+        
+    </body>
+</html>
