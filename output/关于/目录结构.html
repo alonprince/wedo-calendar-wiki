@@ -123,8 +123,30 @@
 <li><a href="#headhtml">head.html(头文件)</a></li>
 </ul>
 </li>
-<li><a href="#lib_1">lib(前后台公用代码)</a></li>
-<li><a href="#public">public(静态资源)</a></li>
+<li><a href="#lib_1">lib(前后台公用代码)</a><ul>
+<li><a href="#collection">collection(表)</a><ul>
+<li><a href="#db-calendarcoffee">DB-calendar.coffee</a><ul>
+<li><a href="#_5">查询方法</a></li>
+<li><a href="#_6">修改方法</a></li>
+<li><a href="#_7">新建和修改权限</a></li>
+</ul>
+</li>
+<li><a href="#db-groupcoffee">DB-group.coffee</a></li>
+<li><a href="#db-notificationcoffee">DB-notification.coffee</a></li>
+<li><a href="#db-friendcoffee">DB-friend.coffee</a></li>
+<li><a href="#db-initcoffee">DB-init.coffee</a></li>
+<li><a href="#db-usercoffee">DB-user.coffee</a></li>
+</ul>
+</li>
+<li><a href="#router">router(路由)</a></li>
+<li><a href="#basecoffee">base.coffee(初始化的命名空间定义)</a></li>
+</ul>
+</li>
+<li><a href="#public">public(静态资源)</a><ul>
+<li><a href="#fonts">fonts(字体文件)</a></li>
+<li><a href="#img">img(图片资源)</a></li>
+</ul>
+</li>
 <li><a href="#server">server(后台代码)</a></li>
 </ul>
 </div>
@@ -465,7 +487,104 @@
 <h3 id="app-bodyjs">app-body.js(没啥用)</h3>
 <h2 id="headhtml">head.html(头文件)</h2>
 <h1 id="lib_1">lib(前后台公用代码)</h1>
+<h2 id="collection">collection(表)</h2>
+<p>注意: 尽量把所有表的操作,都离散成小的功能,然后在表的实例上添加该方法,不要在逻辑区域添加修改数据库的函数,这样不方便以后更改</p>
+<h3 id="db-calendarcoffee">DB-calendar.coffee</h3>
+<blockquote>
+<p>定义了DB.Calendar表,并为这个表的实例添加了一些方法</p>
+</blockquote>
+<h4 id="_5">查询方法</h4>
+<p>findByDate(userId: String, date: Object)</p>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">userId</span><span class="err">是目标用户的</span><span class="n">id</span><span class="p">,</span><span class="n">date</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nl">year:</span> <span class="n">Number</span>
+    <span class="nl">month:</span> <span class="n">Number</span>
+    <span class="nl">date:</span> <span class="n">Number</span>
+<span class="p">}</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">算出某人当天的所有日程</span>
+</pre></div>
+
+
+<p>findNearlyToDo(limitNum: Number)</p>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">limitNum</span><span class="err">是限制的数目</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">找最近代办的日程</span>
+</pre></div>
+
+
+<p>findNearlyCom(limitNum: Number)</p>
+<div class="hlcode"><pre><span class="err">找到最近已经完成的日程</span><span class="p">(</span><span class="err">注意</span><span class="p">,</span><span class="err">这里没通过时间去找</span><span class="p">,</span><span class="err">而是找到所有完成的任务然后通过排序取了最新的几条</span><span class="p">)</span>
+</pre></div>
+
+
+<p>findShareDate(limitNum: Number)</p>
+<div class="hlcode"><pre><span class="err">找到最近分享给别人的日程</span>
+</pre></div>
+
+
+<p>findBeShareDate(limitNum: Number)</p>
+<div class="hlcode"><pre><span class="err">找到最近别人分享给你的日程</span>
+</pre></div>
+
+
+<p>findNearlyDate(type: String, limitNum: Number)</p>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="err">第一个参数是判断是哪种行为</span><span class="p">,</span><span class="err">然后调用上面</span><span class="mi">4</span><span class="err">种方法的其中一种</span>
+<span class="err">注意</span><span class="p">,</span><span class="err">其他类似这种逻辑的函数请也这样设计</span><span class="p">,</span><span class="err">尽量少使用</span><span class="k">if</span><span class="p">...</span><span class="k">else</span> <span class="k">if</span><span class="p">...</span> <span class="k">else</span><span class="err">语法</span>
+</pre></div>
+
+
+<h4 id="_6">修改方法</h4>
+<blockquote>
+<p>参数带问好说明可选,所有cb代表回调函数</p>
+</blockquote>
+<p>addDate(json: Object, cb?: Function)</p>
+<div class="hlcode"><pre><span class="err">参数</span><span class="o">:</span> <span class="n">json</span> <span class="o">=</span><span class="p">{</span>
+    <span class="nl">create_id:</span> <span class="n">String</span>
+    <span class="nl">include:</span> <span class="n">Match</span><span class="p">.</span><span class="n">Optional</span> <span class="n">Array</span>
+    <span class="nl">start_time:</span> <span class="n">Number</span>
+    <span class="nl">end_time:</span> <span class="n">Number</span>
+    <span class="nl">content:</span> <span class="n">String</span>
+    <span class="nl">title:</span> <span class="n">String</span>
+    <span class="nl">groups:</span> <span class="n">Array</span>
+<span class="p">}</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">添加一个日程</span>
+</pre></div>
+
+
+<p>updatePersonDate(json: Object, cb?: Function)</p>
+<div class="hlcode"><pre><span class="err">参数同上</span>
+<span class="err">功能</span><span class="o">:</span> <span class="err">修改一个日程</span>
+</pre></div>
+
+
+<p>delDate(json: Object, cb?: Function)</p>
+<div class="hlcode"><pre><span class="err">为修改日程服务</span><span class="p">,</span><span class="err">逻辑如下：如果是创建者删除该日程，即更改日程的</span><span class="n">status</span><span class="p">,</span><span class="err">大家都看不见</span>
+
+<span class="err">如果不是创建删除，即更改</span><span class="n">include</span><span class="err">内相应地数据，即不关注</span>
+</pre></div>
+
+
+<h4 id="_7">新建和修改权限</h4>
+<p>insert: 创建人id和当前用户相同的情况下可以创建</p>
+<p>update:</p>
+<blockquote>
+<ol>
+<li>
+<p>自己能改自己的</p>
+</li>
+<li>
+<p>我能改别人没锁的</p>
+</li>
+</ol>
+</blockquote>
+<h3 id="db-groupcoffee">DB-group.coffee</h3>
+<h3 id="db-notificationcoffee">DB-notification.coffee</h3>
+<h3 id="db-friendcoffee">DB-friend.coffee</h3>
+<h3 id="db-initcoffee">DB-init.coffee</h3>
+<h3 id="db-usercoffee">DB-user.coffee</h3>
+<h2 id="router">router(路由)</h2>
+<h2 id="basecoffee">base.coffee(初始化的命名空间定义)</h2>
 <h1 id="public">public(静态资源)</h1>
+<h2 id="fonts">fonts(字体文件)</h2>
+<h2 id="img">img(图片资源)</h2>
 <h1 id="server">server(后台代码)</h1>
 </div>
 
