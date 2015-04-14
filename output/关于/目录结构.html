@@ -158,7 +158,11 @@
 </li>
 </ul>
 </li>
-<li><a href="#router">router(路由)</a></li>
+<li><a href="#router">router(路由)</a><ul>
+<li><a href="#initroutercoffee">initRouter.coffee</a></li>
+<li><a href="#routercoffee">router.coffee</a></li>
+</ul>
+</li>
 <li><a href="#basecoffee">base.coffee(初始化的命名空间定义)</a></li>
 </ul>
 </li>
@@ -167,7 +171,12 @@
 <li><a href="#img">img(图片资源)</a></li>
 </ul>
 </li>
-<li><a href="#server">server(后台代码)</a></li>
+<li><a href="#server">server(后台代码)</a><ul>
+<li><a href="#accounts-helpercoffee">accounts-helper.coffee(登陆的辅助方法)</a></li>
+<li><a href="#membercoffee">member.coffee(成员的后台方法)</a></li>
+<li><a href="#publishcoffee">publish.coffee(发布逻辑)</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <p>介绍微度日历的目录结构</p>
@@ -735,11 +744,441 @@
 
 
 <h2 id="router">router(路由)</h2>
+<h3 id="initroutercoffee">initRouter.coffee</h3>
+<p>这个文件主要是路由的一些设置</p>
+<div class="hlcode"><pre><span class="nx">Router</span><span class="p">.</span><span class="nx">onBeforeAction</span><span class="p">(</span> <span class="o">-&gt;</span>
+    <span class="k">if</span> <span class="o">!</span><span class="nx">Meteor</span><span class="p">.</span><span class="nx">userId</span><span class="p">()</span>
+        <span class="nx">Router</span><span class="p">.</span><span class="nx">go</span> <span class="s1">&#39;signin&#39;</span>
+    <span class="k">else</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>
+<span class="p">,</span> <span class="p">{</span>
+    <span class="nx">except</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;join&#39;</span><span class="p">,</span> <span class="s1">&#39;signin&#39;</span><span class="p">]</span>
+<span class="p">})</span>
+</pre></div>
+
+
+<p>这是判断除了登陆和注册以外的所有界面,如果没登陆,就跳登陆</p>
+<div class="hlcode"><pre><span class="nx">Router</span><span class="p">.</span><span class="nx">onBeforeAction</span> <span class="o">-&gt;</span>
+    <span class="k">if</span> <span class="nx">Meteor</span><span class="p">.</span><span class="nx">userId</span><span class="p">()</span><span class="o">?</span>
+        <span class="nx">Router</span><span class="p">.</span><span class="nx">go</span> <span class="s1">&#39;home&#39;</span>
+    <span class="k">else</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>
+<span class="p">,</span> <span class="p">{</span>
+    <span class="nx">only</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;join&#39;</span><span class="p">,</span> <span class="s1">&#39;signin&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这是判断登陆和注册界面,如果已经登陆了,就不允许进入这两个界面</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="err">等订阅完</span>
+<span class="nx">Router</span><span class="p">.</span><span class="nx">onBeforeAction</span> <span class="o">-&gt;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="k">if</span> <span class="k">this</span><span class="p">.</span><span class="nx">ready</span><span class="p">()</span> 
+
+<span class="err">#</span> <span class="err">全局订阅用户信息</span>
+<span class="nx">Router</span><span class="p">.</span><span class="nx">waitOn</span> <span class="o">-&gt;</span>
+    <span class="nx">Meteor</span><span class="p">.</span><span class="nx">subscribe</span> <span class="s1">&#39;userData&#39;</span>
+    <span class="nx">Meteor</span><span class="p">.</span><span class="nx">subscribe</span> <span class="s1">&#39;calendar&#39;</span>
+    <span class="nx">Meteor</span><span class="p">.</span><span class="nx">subscribe</span> <span class="s1">&#39;friend&#39;</span>
+    <span class="nx">Meteor</span><span class="p">.</span><span class="nx">subscribe</span> <span class="s1">&#39;friendInfo&#39;</span>
+    <span class="nx">Meteor</span><span class="p">.</span><span class="nx">subscribe</span> <span class="s1">&#39;notification&#39;</span>
+    <span class="nx">Meteor</span><span class="p">.</span><span class="nx">subscribe</span> <span class="s1">&#39;group&#39;</span>
+<span class="p">,</span> <span class="p">{</span>
+    <span class="nx">except</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;join&#39;</span><span class="p">,</span> <span class="s1">&#39;signin&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这一段是订阅相关的</p>
+<h3 id="routercoffee">router.coffee</h3>
+<p>这是主要的路由文件</p>
+<div class="hlcode"><pre><span class="n">Router</span><span class="p">.</span><span class="n">configure</span> 
+    <span class="n">layoutTemplate</span><span class="o">:</span> <span class="err">&#39;</span><span class="n">appBody</span><span class="err">&#39;</span>
+    <span class="nl">notFoundTemplate:</span> <span class="err">&#39;</span><span class="n">appNotFound</span><span class="err">&#39;</span>
+    <span class="nl">loadingTemplate:</span> <span class="err">&#39;</span><span class="n">appLoading</span><span class="err">&#39;</span>
+</pre></div>
+
+
+<p>设置布局模板,404模板,loading模板</p>
+<div class="hlcode"><pre><span class="cp"># 记录当前时间的session变量名</span>
+<span class="n">CULOOK</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">cuLook</span><span class="err">&#39;</span>
+<span class="n">DEFAULT_VIEW</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">today</span><span class="err">&#39;</span>
+<span class="n">VIEW_TYPE</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">viewType</span><span class="err">&#39;</span>
+<span class="n">ERRORS_KEY</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">joinErrors</span><span class="err">&#39;</span>
+
+<span class="cp"># 当前查看的人员</span>
+<span class="n">CU_MEMBER</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">cuMember</span><span class="err">&#39;</span>
+</pre></div>
+
+
+<p>把Session的名字都提前声明,这样如果做出修改的时候,直接改这个变量就行了</p>
+<div class="hlcode"><pre><span class="n">Router</span><span class="p">.</span><span class="n">map</span> <span class="o">-&gt;</span>
+</pre></div>
+
+
+<p>这里开始定义路由规则</p>
+<div class="hlcode"><pre><span class="cp"># 主页</span>
+<span class="n">this</span><span class="p">.</span><span class="n">route</span> <span class="err">&#39;</span><span class="n">home</span><span class="err">&#39;</span><span class="p">,</span> 
+    <span class="n">path</span><span class="o">:</span> <span class="sc">&#39;/&#39;</span><span class="p">,</span>
+    <span class="nl">action:</span> <span class="o">-&gt;</span>
+        <span class="n">Router</span><span class="p">.</span><span class="n">go</span><span class="p">(</span><span class="err">&#39;</span><span class="n">calendar</span><span class="err">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">this</span><span class="p">.</span><span class="n">ready</span><span class="p">()</span>
+
+
+<span class="cp">#  注册</span>
+<span class="n">this</span><span class="p">.</span><span class="n">route</span> <span class="err">&#39;</span><span class="n">join</span><span class="err">&#39;</span><span class="p">,</span> 
+    <span class="n">path</span><span class="o">:</span> <span class="err">&#39;</span><span class="o">/</span><span class="n">join</span><span class="err">&#39;</span><span class="p">,</span>
+    <span class="nl">layoutTemplate:</span> <span class="err">&#39;&#39;</span><span class="p">,</span>
+    <span class="nl">action:</span> <span class="o">-&gt;</span>
+        <span class="k">if</span> <span class="n">Template</span><span class="p">.</span><span class="n">join</span><span class="p">.</span><span class="n">timer</span>
+            <span class="n">Meteor</span><span class="p">.</span><span class="n">clearInterval</span> <span class="n">Template</span><span class="p">.</span><span class="n">join</span><span class="p">.</span><span class="n">timer</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">render</span><span class="p">()</span>
+
+<span class="cp"># 登陆</span>
+<span class="n">this</span><span class="p">.</span><span class="n">route</span> <span class="err">&#39;</span><span class="n">signin</span><span class="err">&#39;</span><span class="p">,</span> 
+    <span class="n">path</span><span class="o">:</span> <span class="err">&#39;</span><span class="o">/</span><span class="n">signin</span><span class="err">&#39;</span><span class="p">,</span>
+    <span class="nl">layoutTemplate:</span> <span class="err">&#39;&#39;</span><span class="p">,</span>
+    <span class="nl">action:</span> <span class="o">-&gt;</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">render</span><span class="p">()</span>
+</pre></div>
+
+
+<p>这里是主页,注册,登陆的路由设置,其中注册的clearInterval是除去发验证码的定时器用的</p>
+<div class="hlcode"><pre><span class="cp">#  日历页面</span>
+<span class="n">this</span><span class="p">.</span><span class="n">route</span> <span class="err">&#39;</span><span class="n">calendar</span><span class="err">&#39;</span><span class="p">,</span> 
+    <span class="n">action</span><span class="o">:</span> <span class="o">-&gt;</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">Date</span><span class="p">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="err">#</span> <span class="err">获取当前查看的视图模式</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">params</span><span class="p">.</span><span class="n">query</span><span class="p">.</span><span class="n">view</span> <span class="n">or</span> <span class="n">DEFAULT_VIEW</span>
+        <span class="n">Common</span><span class="p">.</span><span class="n">client</span><span class="p">.</span><span class="n">goToday</span><span class="p">()</span> <span class="k">if</span> <span class="n">view</span> <span class="n">is</span> <span class="err">&#39;</span><span class="n">today</span><span class="err">&#39;</span>
+        <span class="err">#</span> <span class="err">设置默认</span><span class="n">Session</span>
+        <span class="n">Session</span><span class="p">.</span><span class="n">setDefault</span> <span class="n">CULOOK</span><span class="p">,</span> <span class="n">now</span>
+        <span class="n">Session</span><span class="p">.</span><span class="n">set</span> <span class="n">CU_MEMBER</span><span class="p">,</span> <span class="n">null</span>
+        <span class="err">#</span> <span class="err">设置视图模式</span>
+        <span class="n">Session</span><span class="p">.</span><span class="n">set</span> <span class="n">VIEW_TYPE</span><span class="p">,</span> <span class="n">view</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">render</span><span class="p">()</span>
+</pre></div>
+
+
+<p>日历的路由逻辑,从路由地址中读取当前的视图类型,然后操作Session</p>
+<div class="hlcode"><pre><span class="cp"># 群组页面</span>
+<span class="n">this</span><span class="p">.</span><span class="n">route</span> <span class="err">&#39;</span><span class="n">group</span><span class="err">&#39;</span><span class="p">,</span> 
+    <span class="n">path</span><span class="o">:</span> <span class="err">&#39;</span><span class="o">/</span><span class="n">group</span><span class="o">/:</span><span class="n">_id</span><span class="o">?</span><span class="err">&#39;</span>
+    <span class="nl">action:</span> <span class="o">-&gt;</span>
+        <span class="n">Session</span><span class="p">.</span><span class="n">set</span> <span class="n">CU_MEMBER</span><span class="p">,</span> <span class="n">this</span><span class="p">.</span><span class="n">params</span><span class="p">.</span><span class="n">_id</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">render</span><span class="p">()</span>
+
+
+<span class="cp"># 共享页面</span>
+<span class="n">this</span><span class="p">.</span><span class="n">route</span> <span class="err">&#39;</span><span class="n">share</span><span class="err">&#39;</span><span class="p">,</span> 
+    <span class="n">path</span><span class="o">:</span> <span class="err">&#39;</span><span class="o">/</span><span class="n">share</span><span class="o">/:</span><span class="n">_id</span><span class="o">?</span><span class="err">&#39;</span>
+    <span class="nl">action:</span> <span class="o">-&gt;</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">params</span><span class="p">.</span><span class="n">query</span><span class="p">.</span><span class="n">view</span> <span class="n">or</span> <span class="err">&#39;</span><span class="n">month</span><span class="err">&#39;</span>
+        <span class="n">Session</span><span class="p">.</span><span class="n">set</span> <span class="n">VIEW_TYPE</span><span class="p">,</span> <span class="n">view</span>
+        <span class="n">Session</span><span class="p">.</span><span class="n">set</span> <span class="n">CU_MEMBER</span><span class="p">,</span> <span class="n">this</span><span class="p">.</span><span class="n">params</span><span class="p">.</span><span class="n">_id</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">render</span><span class="p">()</span>
+</pre></div>
+
+
+<p>群组和共享的页面,也是通过路由地址来控制Session</p>
 <h2 id="basecoffee">base.coffee(初始化的命名空间定义)</h2>
+<p>用来初始化命名空间,做了momentJs的国际化处理</p>
 <h1 id="public">public(静态资源)</h1>
 <h2 id="fonts">fonts(字体文件)</h2>
 <h2 id="img">img(图片资源)</h2>
 <h1 id="server">server(后台代码)</h1>
+<h3 id="accounts-helpercoffee">accounts-helper.coffee(登陆的辅助方法)</h3>
+<p>登陆需要用到的辅助方法</p>
+<div class="hlcode"><pre><span class="cp"># 注册时加上md5、注册时间</span>
+<span class="n">Accounts</span><span class="p">.</span><span class="n">onCreateUser</span> <span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">profile</span> <span class="o">=</span> <span class="n">options</span><span class="p">.</span><span class="n">profile</span>
+    <span class="k">if</span> <span class="n">profile</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">profile</span><span class="p">.</span><span class="n">passwordCache</span>
+        <span class="n">encryption</span> <span class="o">=</span> <span class="n">crypto</span><span class="p">.</span><span class="n">createHash</span> <span class="err">&#39;</span><span class="n">md5</span><span class="err">&#39;</span>
+                        <span class="p">.</span><span class="n">update</span> <span class="n">password</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">utf8</span><span class="err">&#39;</span>
+                        <span class="p">.</span><span class="n">digest</span> <span class="err">&#39;</span><span class="n">hex</span><span class="err">&#39;</span>
+        <span class="n">regtime</span> <span class="o">=</span> <span class="n">Date</span><span class="p">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">profile</span><span class="p">.</span><span class="n">encryption</span> <span class="o">=</span> <span class="n">encryption</span> <span class="k">if</span> <span class="n">encryption</span>
+        <span class="n">profile</span><span class="p">.</span><span class="n">regtime</span> <span class="o">=</span> <span class="n">regtime</span>
+        <span class="n">delete</span> <span class="n">profile</span><span class="p">.</span><span class="n">passwordCache</span>
+        <span class="n">user</span><span class="p">.</span><span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span>
+    <span class="k">return</span> <span class="n">user</span><span class="p">;</span>
+
+<span class="cp"># 登陆的时候更新登陆日志</span>
+<span class="n">Accounts</span><span class="p">.</span><span class="n">onLogin</span> <span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">info</span><span class="p">.</span><span class="n">user</span><span class="p">.</span><span class="n">_id</span>
+    <span class="n">oDate</span> <span class="o">=</span> <span class="n">moment</span><span class="p">()</span>
+    <span class="n">loginInfo</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">loginInfo</span><span class="p">.</span><span class="n">member_id</span>
+    <span class="n">loginInfo</span><span class="p">.</span><span class="n">logindata</span> <span class="o">=</span> <span class="n">oDate</span><span class="p">.</span><span class="n">format</span> <span class="err">&#39;</span><span class="n">YYYY</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">DD</span><span class="err">&#39;</span>
+    <span class="n">loginInfo</span><span class="p">.</span><span class="n">logintime</span> <span class="o">=</span> <span class="n">oDate</span><span class="p">.</span><span class="n">format</span> <span class="err">&#39;</span><span class="n">YYYY</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">DD</span> <span class="n">HH</span><span class="o">:</span><span class="n">MM</span><span class="o">:</span><span class="n">SS</span><span class="err">&#39;</span>
+    <span class="n">loginInfo</span><span class="p">.</span><span class="n">loginTimeInt</span> <span class="o">=</span> <span class="n">oDate</span><span class="p">.</span><span class="n">format</span> <span class="sc">&#39;x&#39;</span>
+    <span class="n">loginInfo</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="sc">&#39;w&#39;</span>
+    <span class="n">DB</span><span class="p">.</span><span class="n">LoginInfo</span><span class="p">.</span><span class="n">add</span> <span class="n">loginInfo</span>
+</pre></div>
+
+
+<p>这两个方法是用于处理注册和登陆的,前者是在注册的时候添加md5加密的密码,还有一些相关信息,后者是登陆的时候在login表里面记录登陆的信息</p>
+<div class="hlcode"><pre><span class="cp"># 短信格式和内容</span>
+<span class="n">getMsgContent</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">getMsgContent</span><span class="p">.</span><span class="n">setCode</span> <span class="o">=</span> <span class="p">(</span><span class="n">phone</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">return</span> <span class="s">&quot;#{}&quot;</span>
+</pre></div>
+
+
+<p>设置短信的内容,未完成,加上短信接口的时候只需要补全这个函数,然后去调用即可</p>
+<div class="hlcode"><pre><span class="cp"># 设置验证码</span>
+<span class="n">Meteor</span><span class="p">.</span><span class="n">methods</span> <span class="p">{</span>
+    <span class="nl">setCode:</span> <span class="p">(</span><span class="n">phone</span><span class="p">)</span> <span class="o">-&gt;</span>
+        <span class="n">old</span> <span class="o">=</span> <span class="n">DB</span><span class="p">.</span><span class="n">VCode</span><span class="p">.</span><span class="n">getCode</span> <span class="n">phone</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">_</span><span class="p">.</span><span class="n">random</span> <span class="mi">100000</span><span class="p">,</span> <span class="mi">999999</span>
+        <span class="err">#</span> <span class="err">先判断这个手机号是否已经注册了</span>
+        <span class="n">man</span> <span class="o">=</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">findOne</span> <span class="p">{</span>
+            <span class="nl">username:</span> <span class="n">phone</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">man</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="nl">code:</span> <span class="mi">0</span>
+                <span class="nl">result:</span> <span class="err">&#39;改手机号已注册&#39;</span>
+            <span class="p">}</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">Date</span><span class="p">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">console</span><span class="p">.</span><span class="n">log</span> <span class="s">&quot;#{phone}的验证码为#{code}&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">getMsgContent</span><span class="p">.</span><span class="n">setCode</span> <span class="n">phone</span>
+        <span class="k">if</span> <span class="n">old</span><span class="p">.</span><span class="n">code</span>
+            <span class="n">VCodeId</span> <span class="o">=</span> <span class="n">old</span><span class="p">.</span><span class="n">result</span><span class="p">.</span><span class="n">_id</span>
+            <span class="n">isSuccess</span> <span class="o">=</span> <span class="n">DB</span><span class="p">.</span><span class="n">VCode</span><span class="p">.</span><span class="n">update</span> <span class="p">{</span>
+                <span class="nl">_id:</span> <span class="n">VCodeId</span>
+            <span class="p">},</span> <span class="p">{</span>
+                <span class="err">$</span><span class="n">set</span><span class="o">:</span> 
+                    <span class="n">code</span><span class="o">:</span> <span class="n">code</span>
+                    <span class="nl">create_time:</span> <span class="n">now</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">isSuccess</span>
+                <span class="err">#</span> <span class="err">发短信给用户</span>
+                <span class="n">Meteor</span><span class="p">.</span><span class="n">call</span> <span class="err">&#39;</span><span class="n">sendMsg</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">phone</span><span class="p">,</span> <span class="n">msg</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="nl">code:</span> <span class="mi">1</span>
+                    <span class="nl">result:</span> 
+                        <span class="n">code</span><span class="o">:</span> <span class="n">code</span>
+                        <span class="nl">createTime:</span> <span class="n">now</span>
+                <span class="p">}</span>
+            <span class="k">else</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="nl">code:</span> <span class="mi">0</span>
+                    <span class="nl">result:</span> <span class="err">&#39;获取验证码错误，请稍后重试&#39;</span>
+                <span class="p">}</span>
+        <span class="k">else</span> 
+            <span class="n">isSuccess</span> <span class="o">=</span> <span class="n">DB</span><span class="p">.</span><span class="n">VCode</span><span class="p">.</span><span class="n">insert</span> <span class="p">{</span>
+                <span class="nl">phone:</span> <span class="n">phone</span>
+                <span class="nl">code:</span> <span class="n">code</span>
+                <span class="nl">create_time:</span> <span class="n">now</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">isSuccess</span>
+                <span class="err">#</span> <span class="err">发短信给用户</span>
+                <span class="n">Meteor</span><span class="p">.</span><span class="n">call</span> <span class="err">&#39;</span><span class="n">sendMsg</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">phone</span><span class="p">,</span> <span class="n">msg</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="nl">code:</span> <span class="mi">1</span>
+                    <span class="nl">result:</span> 
+                        <span class="n">code</span><span class="o">:</span> <span class="n">code</span>
+                        <span class="nl">createTime:</span> <span class="n">now</span>
+                <span class="p">}</span>
+            <span class="k">else</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="nl">code:</span> <span class="mi">0</span>
+                    <span class="nl">result:</span> <span class="err">&#39;获取验证码错误，请稍后重试&#39;</span>
+                <span class="p">}</span>
+
+    <span class="err">#</span> <span class="err">发送短信的方法</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="nl">sendMsg:</span> <span class="p">(</span><span class="n">phone</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span>
+        <span class="n">check</span> <span class="n">phone</span><span class="p">,</span> <span class="n">String</span>
+        <span class="n">check</span> <span class="n">msg</span><span class="p">,</span> <span class="n">String</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+    <span class="err">#</span> <span class="err">未完成</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这是发送验证码的两个方法,第一个是生成验证码,第二个是发送验证码,未完成</p>
+<h3 id="membercoffee">member.coffee(成员的后台方法)</h3>
+<p>人员相关的后台方法,因为有些数据没推送到前台,所以通过后台计算后返回前台</p>
+<div class="hlcode"><pre><span class="nl">findPerson:</span> <span class="p">(</span><span class="n">keyword</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">check</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">String</span>
+    <span class="err">#</span> <span class="err">搜索手机号就过滤掉</span><span class="n">email</span>
+    <span class="n">man</span> <span class="o">=</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">findOne</span> <span class="p">{</span>
+        <span class="nl">username:</span> <span class="n">keyword</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="nl">fields:</span>
+            <span class="nl">services:</span> <span class="nb">false</span>
+            <span class="nl">emails:</span> <span class="nb">false</span>
+    <span class="p">}</span>
+    <span class="n">unless</span> <span class="n">man</span>
+        <span class="err">#</span> <span class="err">过滤掉手机号</span>
+        <span class="n">man</span> <span class="o">=</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">findOne</span> <span class="p">{</span>
+            <span class="err">&#39;</span><span class="n">emails</span><span class="mf">.0</span><span class="p">.</span><span class="n">address</span><span class="err">&#39;</span><span class="o">:</span> <span class="n">keyword</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nl">fields:</span>
+                <span class="nl">services:</span> <span class="nb">false</span>
+                <span class="nl">username:</span> <span class="nb">false</span>
+        <span class="p">}</span>
+    <span class="k">if</span> <span class="n">man</span>  
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="nl">result:</span> <span class="n">man</span>
+        <span class="p">}</span>
+    <span class="k">else</span> 
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="nl">error:</span> <span class="err">&#39;无搜索结果&#39;</span>
+        <span class="p">}</span>
+</pre></div>
+
+
+<p>用于添加联系人的时候,搜索人员使用,输入邮箱或手机查找相关人员,精确搜索</p>
+<div class="hlcode"><pre><span class="cp"># 返回固定人员的名字</span>
+<span class="nl">getPersonName:</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">check</span> <span class="n">id</span><span class="p">,</span> <span class="n">String</span>
+    <span class="n">somebody</span> <span class="o">=</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">findOne</span> <span class="n">id</span>
+    <span class="k">if</span> <span class="n">somebody</span>
+        <span class="k">return</span> <span class="n">somebody</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">name</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="err">&#39;未知用户&#39;</span>
+</pre></div>
+
+
+<p>根据id返回对应人员的名字使用</p>
+<div class="hlcode"><pre><span class="cp"># 同意好友请求之后修改申请人的status状态</span>
+<span class="cp"># id是申请人的id</span>
+<span class="nl">agreeFriendQuery:</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">check</span> <span class="n">id</span><span class="p">,</span> <span class="n">String</span>
+    <span class="n">check</span> <span class="n">status</span><span class="p">,</span> <span class="n">Number</span>
+    <span class="n">myId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="n">console</span><span class="p">.</span><span class="n">log</span> <span class="n">myId</span><span class="p">,</span> <span class="n">status</span>
+    <span class="k">return</span> <span class="n">DB</span><span class="p">.</span><span class="n">Friend</span><span class="p">.</span><span class="n">update</span> <span class="p">{</span>
+        <span class="nl">_id:</span> <span class="n">id</span>
+        <span class="err">&#39;</span><span class="n">friends</span><span class="p">.</span><span class="n">_id</span><span class="err">&#39;</span><span class="o">:</span> <span class="n">myId</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="err">$</span><span class="n">set</span><span class="o">:</span> 
+            <span class="err">&#39;</span><span class="n">friends</span><span class="p">.</span><span class="err">$</span><span class="p">.</span><span class="n">status</span><span class="err">&#39;</span><span class="o">:</span> <span class="n">status</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>这个是同意别人的好友请求的时候调用的方法,因为同意的那一瞬间,还不是好友,所以联系人的资料没有提送过来,需要通过后台修改</p>
+<h3 id="publishcoffee">publish.coffee(发布逻辑)</h3>
+<p>发布数据的逻辑</p>
+<div class="hlcode"><pre><span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">userData</span><span class="err">&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="k">if</span> <span class="n">userId</span><span class="o">?</span>
+        <span class="k">return</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">find</span> <span class="p">{</span>
+            <span class="nl">_id:</span> <span class="n">userId</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nl">fields:</span> <span class="p">{</span>
+                <span class="nl">services:</span> <span class="nb">false</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="k">else</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">ready</span><span class="p">()</span>
+        <span class="k">return</span>
+</pre></div>
+
+
+<p>发布用户数据的逻辑,除了services字段,其余抛出去,这里只订阅自己的数据</p>
+<div class="hlcode"><pre><span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">calendar</span><span class="err">&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">idArr</span><span class="p">,</span> <span class="n">filter</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="n">idArr</span> <span class="o">=</span> <span class="n">idArr</span> <span class="n">or</span> <span class="p">[</span><span class="n">userId</span><span class="p">]</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="err">$</span><span class="n">or</span><span class="o">:</span> <span class="p">[{</span>
+            <span class="nl">create_id:</span> 
+                <span class="err">$</span><span class="n">in</span><span class="o">:</span> <span class="n">idArr</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nl">include:</span>
+                <span class="err">$</span><span class="n">elemMatch</span><span class="o">:</span> 
+                    <span class="n">_id</span><span class="o">:</span> 
+                        <span class="err">$</span><span class="n">in</span><span class="o">:</span> <span class="n">idArr</span>
+                    <span class="nl">status:</span> <span class="mi">0</span>
+        <span class="p">}]</span>
+    <span class="p">}</span>
+    <span class="n">filter</span> <span class="o">=</span> <span class="n">filter</span> <span class="n">or</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">DB</span><span class="p">.</span><span class="n">Calendar</span><span class="p">.</span><span class="n">find</span> <span class="n">query</span><span class="p">,</span> <span class="n">filter</span>
+</pre></div>
+
+
+<p>日历的发布逻辑,发布所有自己创建的和自己参与的日历</p>
+<div class="hlcode"><pre><span class="cp"># 发布我的联系人</span>
+<span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">friendInfo</span><span class="err">&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="err">#</span> <span class="err">找到我自己</span>
+    <span class="n">me</span> <span class="o">=</span> <span class="n">DB</span><span class="p">.</span><span class="n">Friend</span><span class="p">.</span><span class="n">findOne</span> <span class="p">{</span>
+        <span class="nl">_id:</span> <span class="n">userId</span>
+    <span class="p">}</span>
+    <span class="err">#</span> <span class="err">取到</span><span class="n">friends</span>
+    <span class="n">friends</span> <span class="o">=</span> <span class="n">me</span> <span class="n">and</span> <span class="n">me</span><span class="p">.</span><span class="n">friends</span> <span class="n">or</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">friends</span><span class="p">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">friendId</span> <span class="o">=</span> <span class="n">_</span><span class="p">.</span><span class="n">pluck</span> <span class="n">friends</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">_id</span><span class="err">&#39;</span>
+        <span class="k">return</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">find</span> <span class="p">{</span>
+            <span class="nl">_id:</span>
+                <span class="err">$</span><span class="n">in</span><span class="o">:</span> <span class="n">friendId</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nl">fields:</span>
+                <span class="nl">services:</span> <span class="nb">false</span>
+        <span class="p">}</span>
+    <span class="k">else</span>
+        <span class="n">this</span><span class="p">.</span><span class="n">ready</span><span class="p">()</span>
+</pre></div>
+
+
+<p>根据我的friend数据,去users表里订阅相关数据,<strong>不同于订阅friend</strong>,这个是订阅联系人在users表里的数据,不是订阅自己在DB.Friend里的数据</p>
+<div class="hlcode"><pre><span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">friend</span><span class="err">&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="k">return</span> <span class="n">DB</span><span class="p">.</span><span class="n">Friend</span><span class="p">.</span><span class="n">find</span> <span class="p">{</span>
+        <span class="nl">_id:</span> <span class="n">userId</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>订阅我在friend表里面的数据</p>
+<div class="hlcode"><pre><span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">notification</span><span class="err">&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="k">return</span> <span class="n">DB</span><span class="p">.</span><span class="n">Notification</span><span class="p">.</span><span class="n">find</span> <span class="p">{</span>
+        <span class="err">$</span><span class="n">or</span><span class="o">:</span> <span class="p">[{</span>
+            <span class="nl">target_id:</span> <span class="n">userId</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nl">bulletin:</span> <span class="nb">true</span> 
+        <span class="p">}]</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>发布通知,发布目标者是自己的通知,或者公告(bulletin: true)</p>
+<div class="hlcode"><pre><span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">notificationName</span><span class="err">&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">check</span> <span class="n">arr</span><span class="p">,</span> <span class="n">Array</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="p">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">Meteor</span><span class="p">.</span><span class="n">users</span><span class="p">.</span><span class="n">find</span> <span class="p">{</span>
+            <span class="nl">_id:</span> 
+                <span class="err">$</span><span class="n">in</span><span class="o">:</span> <span class="n">arr</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nl">fields:</span>
+                <span class="nl">_id:</span> <span class="nb">true</span>
+                <span class="err">&#39;</span><span class="n">profile</span><span class="p">.</span><span class="n">name</span><span class="err">&#39;</span><span class="o">:</span> <span class="nb">true</span>
+        <span class="p">}</span>
+    <span class="k">else</span> 
+        <span class="n">this</span><span class="p">.</span><span class="n">ready</span><span class="p">()</span>
+</pre></div>
+
+
+<p>发布通知里面涉及到的人员的名字,有时候你的通知内容涉及到陌生人,是取不到他们名字的,需要通过这个来发布出去</p>
+<div class="hlcode"><pre><span class="n">Meteor</span><span class="p">.</span><span class="n">publish</span> <span class="err">&#39;</span><span class="n">group</span><span class="err">&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+    <span class="n">userId</span> <span class="o">=</span> <span class="n">this</span><span class="p">.</span><span class="n">userId</span>
+    <span class="k">return</span> <span class="n">DB</span><span class="p">.</span><span class="n">Groups</span><span class="p">.</span><span class="n">find</span> 
+        <span class="n">member_list</span><span class="o">:</span> 
+            <span class="err">$</span><span class="n">in</span><span class="o">:</span> <span class="p">[</span><span class="n">userId</span><span class="p">]</span>
+</pre></div>
+
+
+<p>发布群组数据,自己所在的群组</p>
+<p><strong>这里需要注意,如果要更改订阅,尽量不要在原有基础上做更改,而是多配置一个发布规则去订阅</strong></p>
 </div>
 
         </div>
